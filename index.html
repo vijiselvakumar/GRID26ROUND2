@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRAINSTORMING - KCSKNC GRID26</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    overflow:hidden;
+
+    background:linear-gradient(
+    -45deg,
+    #ff9a9e,
+    #fad0c4,
+    #84fab0,
+    #8fd3f4,
+    #fbc2eb,
+    #a18cd1);
+
+    background-size:400% 400%;
+    animation:bgMove 12s infinite ease;
+}
+
+@keyframes bgMove{
+
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+
+}
+
+h1{
+
+display:inline-block;
+    padding:14px 40px;
+    margin-bottom:20px;
+
+    font-size:38px;
+    font-weight:bold;
+    color:white;
+    text-transform:uppercase;
+    letter-spacing:2px;
+
+    background:linear-gradient(90deg,#1565C0,#42A5F5,#7E57C2,#EC407A,#F06292);
+
+    border-radius:50px;
+    border:3px solid white;
+
+    box-shadow:0 6px 18px rgba(0,0,0,0.35);
+}
+
+#login{
+
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+text-align:center;
+
+background:rgba(255,255,255,.2);
+
+padding:40px;
+
+border-radius:20px;
+
+backdrop-filter:blur(10px);
+
+box-shadow:0 0 20px rgba(0,0,0,.3);
+
+}
+
+input{
+
+width:260px;
+
+padding:12px;
+
+margin:10px;
+
+font-size:18px;
+
+border:none;
+
+border-radius:10px;
+
+outline:none;
+
+}
+
+button{
+
+padding:12px 40px;
+
+font-size:20px;
+
+cursor:pointer;
+
+border:none;
+
+border-radius:10px;
+
+background:#ff4081;
+
+color:white;
+
+transition:.3s;
+
+}
+
+button:hover{
+
+transform:scale(1.05);
+
+background:#f50057;
+
+}
+
+#game{
+
+display:none;
+
+padding:20px;
+
+text-align:center;
+
+}
+
+#info{
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+#info div{
+    padding:12px 22px;
+    border-radius:15px;
+
+    background:linear-gradient(90deg,#1565C0,#42A5F5,#AB47BC,#EC407A);
+
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+
+    border:2px solid white;
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+}
+#board{
+
+display:grid;
+
+grid-template-columns:repeat(5,120px);
+
+gap:15px;
+
+justify-content:center;
+
+margin-top:20px;
+
+}
+
+.card{
+
+width:120px;
+
+height:120px;
+
+border-radius:15px;
+
+cursor:pointer;
+
+border:3px solid white;
+
+background:linear-gradient(
+135deg,
+#ff6a00,
+#ee0979);
+
+background-size:200% 200%;
+
+animation:cardMove 5s linear infinite;
+
+transition:.3s;
+
+background-size:contain;
+background-position:center;
+background-repeat:no-repeat;
+
+}
+.card img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.card:hover{
+
+transform:scale(1.05);
+
+box-shadow:0 0 15px yellow;
+
+}
+
+@keyframes cardMove{
+
+0%{background-position:left;}
+100%{background-position:right;}
+
+}
+
+.matched{
+ 
+    filter:blur(4px);
+    opacity:0.8;
+    border:5px solid lime;
+    box-shadow:0 0 20px lime;
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="login">
+
+<h1>BRAINSTORMING - KCSKNC GRID26</h1>
+
+<input
+id="name"
+placeholder="Enter Student Name">
+
+<br>
+
+<input
+id="cls"
+placeholder="Enter Class">
+
+<br><br>
+
+<button onclick="startGame()">
+Start Game
+</button>
+
+</div>
+
+<div id="game">
+
+<h1>BRAINSTORMING - KCSKNC GRID'26</h1>
+
+<div id="info">
+
+<div>Name :
+<span id="showName"></span>
+</div>
+
+<div>Class :
+<span id="showClass"></span>
+</div>
+
+<div id="moves">
+Moves : 0
+</div>
+
+<div id="matches">
+Matches : 0 / 10
+</div>
+
+<div id="timer">
+Time : 0 sec
+</div>
+
+</div>
+
+<div id="board"></div>
+
+</div>
+
+<script>
+    const imageFiles = [
+"1.jpg","2.jpg","3.jpg","4.jpg","5.jpg",
+"6.jpg","7.jpg","8.jpg","9.jpg","10.jpg"
+];
+
+let cards = [];
+let opened = [];
+let matched = [];
+
+let moves = 0;
+let matches = 0;
+
+let lock = false;
+
+let timer = 0;
+let timerInterval;
+
+const board = document.getElementById("board");
+
+function startGame(){
+
+    const name = document.getElementById("name").value.trim();
+    const cls = document.getElementById("cls").value.trim();
+
+    if(name=="" || cls==""){
+        alert("Please enter Name and Class");
+        return;
+    }
+
+    document.getElementById("login").style.display="none";
+    document.getElementById("game").style.display="block";
+
+    document.getElementById("showName").innerHTML=name;
+    document.getElementById("showClass").innerHTML=cls;
+
+    initializeGame();
+
+    timerInterval=setInterval(updateTimer,1000);
+
+}
+
+function initializeGame(){
+
+    cards=[...imageFiles,...imageFiles];
+
+    shuffle(cards);
+
+    board.innerHTML="";
+
+    opened=[];
+    matched=[];
+
+    moves=0;
+    matches=0;
+    timer=0;
+
+    updateLabels();
+
+    cards.forEach((img,index)=>{
+
+        const card=document.createElement("div");
+
+        card.className="card";
+
+        card.dataset.index=index;
+
+        card.onclick=()=>cardClick(index);
+
+        board.appendChild(card);
+
+    });
+
+}
+
+function shuffle(array){
+
+    for(let i=array.length-1;i>0;i--){
+
+        let j=Math.floor(Math.random()*(i+1));
+
+        [array[i],array[j]]=[array[j],array[i]];
+
+    }
+
+}
+
+function cardClick(index){
+
+    if(lock) return;
+
+    if(opened.includes(index)) return;
+
+    if(matched.includes(index)) return;
+
+    const card=document.querySelectorAll(".card")[index];
+
+    card.style.backgroundImage="url('images/"+cards[index]+"')";
+
+    card.style.animation="none";
+
+    opened.push(index);
+
+    if(opened.length===2){
+
+        checkMatch();
+
+    }
+
+}
+
+function checkMatch(){
+
+    moves++;
+
+    updateLabels();
+
+    const first=opened[0];
+    const second=opened[1];
+
+    const all=document.querySelectorAll(".card");
+
+    if(cards[first]===cards[second]){
+
+        matched.push(first);
+        matched.push(second);
+
+        all[first].classList.add("matched");
+        all[second].classList.add("matched");
+
+        opened=[];
+
+        matches++;
+
+        updateLabels();
+
+        if(matches===10){
+
+            clearInterval(timerInterval);
+
+            setTimeout(function(){
+
+                alert(
+                    "🎉 Congratulations!\n\n"+
+                    "Name : "+
+                    document.getElementById("showName").innerHTML+
+                    "\nClass : "+
+                    document.getElementById("showClass").innerHTML+
+                    "\n\nMoves : "+moves+
+                    "\nTime : "+timer+" sec"
+                );
+
+            },300);
+
+        }
+
+    }
+    else{
+
+        lock=true;
+
+        setTimeout(function(){
+
+            all[first].style.backgroundImage="";
+            all[second].style.backgroundImage="";
+
+            all[first].style.animation="cardMove 5s linear infinite";
+            all[second].style.animation="cardMove 5s linear infinite";
+
+            opened=[];
+
+            lock=false;
+
+        },1000);
+
+    }
+
+}
+function updateTimer(){
+
+    timer++;
+
+    document.getElementById("timer").innerHTML =
+    "Time : " + timer + " sec";
+
+}
+
+
+function updateLabels(){
+
+    document.getElementById("moves").innerHTML =
+    "Moves : " + moves;
+
+    document.getElementById("matches").innerHTML =
+    "Matches : " + matches + " / 10";
+
+}
+
+</script>
