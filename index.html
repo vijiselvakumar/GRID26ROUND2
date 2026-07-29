@@ -305,7 +305,9 @@ let lock = false;
 
 let timer = 0;
 let timerInterval;
-
+let previewTime = 30;
+let previewInterval;
+let gameStarted = false;
 const board = document.getElementById("board");
 
 function startGame(){
@@ -326,11 +328,9 @@ function startGame(){
 
     initializeGame();
 
-    timerInterval=setInterval(updateTimer,1000);
+    startPreview();
 
-}
-
-function initializeGame(){
+}function initializeGame(){
 
     cards=[...imageFiles,...imageFiles];
 
@@ -362,7 +362,84 @@ function initializeGame(){
     });
 
 }
+function startPreview(){
 
+    gameStarted=false;
+
+    const all=document.querySelectorAll(".card");
+
+
+    // Show all images
+    all.forEach((card,index)=>{
+
+        card.style.backgroundImage =
+        "url('images/"+cards[index]+"')";
+
+        card.style.animation="none";
+
+    });
+
+
+    previewTime=30;
+
+
+    document.getElementById("timer").innerHTML =
+    "Memorize Time : "+previewTime+" sec";
+
+
+    previewInterval=setInterval(()=>{
+
+
+        previewTime--;
+
+
+        document.getElementById("timer").innerHTML =
+        "Memorize Time : "+previewTime+" sec";
+
+
+        if(previewTime<=0){
+
+
+            clearInterval(previewInterval);
+
+
+            hideImages();
+
+
+            gameStarted=true;
+
+
+            timer=0;
+
+
+            timerInterval=setInterval(updateTimer,1000);
+
+
+            document.getElementById("timer").innerHTML =
+            "Time : 0 sec";
+
+
+        }
+
+
+    },1000);
+
+
+}
+function hideImages(){
+
+    const all=document.querySelectorAll(".card");
+
+
+    all.forEach(card=>{
+
+        card.style.backgroundImage="";
+
+        card.style.animation="cardMove 5s linear infinite";
+
+    });
+
+}
 function shuffle(array){
 
     for(let i=array.length-1;i>0;i--){
@@ -376,6 +453,10 @@ function shuffle(array){
 }
 
 function cardClick(index){
+    if(!gameStarted){
+        return;
+    }
+
 
     if(lock) return;
 
